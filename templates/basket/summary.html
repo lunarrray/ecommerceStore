@@ -58,7 +58,13 @@ Basket Summary
     {% endfor %}
     <div class="col-12 text-end">
       <div class="h6 fw-bold">Sub Total: <div id="subtotal" class="d-inline-flex">{{basket.get_total_price}}</div> soms</div>
+
+            <div class="d-grid gap-2 ">
+              <a style="float:right" role="button" href="{% url "payment:basket" %}" class="btn btn-success fw-bold" type="button">Checkout</a>
+            </div>
+
     </div>
+
   </div>
 </main>
 
