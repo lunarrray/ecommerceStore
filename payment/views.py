@@ -6,7 +6,7 @@ from django.http.response import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic.base import TemplateView
-
+from .forms import OrderForm
 from basket.basket import Basket
 # from orders.views import payment_confirmation
 
@@ -25,39 +25,36 @@ from basket.basket import Basket
 def BasketView(request):
 
     basket = Basket(request)
-    total = str(basket.get_total_price())
-    total = total.replace('.', '')
-    total = int(total)
+    total = basket.get_total_price()
+    # total = total.replace('.', '')
+    # total = int(total)
 
-    stripe.api_key = ''
-    intent = stripe.PaymentIntent.create(
-        amount=total,
-        currency='gbp',
-        metadata={'userid': request.user.id}
-    )
+    if request.method == 'POST':
+        orderingForm = OrderForm(request.POST)
 
-    # return render(request, 'payment/home.html', {'client_secret': intent.client_secret})
-    return render(request, 'payment/home.html')
+        if orderingForm.is_valid():
+            order = orderingForm.save(commit=False)
+            order.user = request.user
+            order.full_name = orderingForm.cleaned_data['full_name']
+            # order.email = orderingForm.cleaned_data['email']
+            order.address = orderingForm.cleaned_data['address']
+            order.total_paid = total
+            order.save()
+            clean_basket(request)
+            return render(request, 'account/user/dashboard.html')
+    else:
+        orderingForm = OrderForm()
+
+    return render(request, 'payment/home.html', {'form': orderingForm})
 
 
-# @csrf_exempt
-# def stripe_webhook(request):
-#     payload = request.body
-#     event = None
-#
-#     try:
-#         event = stripe.Event.construct_from(
-#             json.loads(payload), stripe.api_key
-#         )
-#     except ValueError as e:
-#         print(e)
-#         return HttpResponse(status=400)
-#
-#     # Handle the event
-#     if event.type == 'payment_intent.succeeded':
-#         payment_confirmation(event.data.object.client_secret)
-#
-#     else:
-#         print('Unhandled event type {}'.format(event.type))
-#
-#     return HttpResponse(status=200)
+def clean_basket(request):
+    basket = Basket(request)
+    basket.clear()
+    # basketqty = basket.__len__()
+    # baskettotal = basket.get_total_price()
+    # response = JsonResponse({'qty': basketqty, 'subtotal': baskettotal})
+    # return response
+
+
+

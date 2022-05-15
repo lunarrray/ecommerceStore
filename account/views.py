@@ -26,8 +26,8 @@ def dashboard(request):
 
 def account_register(request):
 
-    # if request.user.is_authenticated:
-    #     return redirect('/')
+    if request.user.is_authenticated:
+        return redirect('/')
 
     if request.method == 'POST':
         registerForm = RegistrationForm(request.POST)

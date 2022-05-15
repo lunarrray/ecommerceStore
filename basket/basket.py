@@ -53,3 +53,7 @@ class Basket():
             self.basket[product_id]['qty'] = qty
 
         self.session.modified = True
+
+    def clear(self):
+        del self.session['skey']
+        self.session.modified = True
