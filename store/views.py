@@ -24,3 +24,10 @@ def category_list(request, category_slug):
     products = Product.objects.filter(category=category)
     return render(request, 'store/products/category.html', {'category': category, 'products': products})
 
+def searchDetail(request):
+    if request.method == "POST":
+        searched = request.POST['searched']
+        products = Product.objects.filter(title__contains=searched)
+        return render(request, 'store/products/searchDetail.html', {'searched': searched, 'products': products})
+    else:
+        return render(request, 'store/products/searchDetail.html', {})
